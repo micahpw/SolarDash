@@ -5,9 +5,9 @@ import pandas as pd
 import plotly.express as px
 import model
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+#external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+app = dash.Dash(__name__)
 
 
 
@@ -16,55 +16,78 @@ SolarFarm = model.SolarFarm()
 
 available_indicators = SolarFarm.Total.columns.values
 
-app.layout = html.Div([
-    html.Div([
+hist_columns = SolarFarm.Intervals.columns.values
 
-        html.Div([
+app.layout = html.Div([
+    html.Div(className='GridWrapper', children=[
+
+        #High Level Scatter with Drop-down choices
+        html.Div(className='TopLeft', children=[
+            
+            #Column Configuration  
+            html.Div([
             dcc.Dropdown(
-                id='crossfilter-xaxis-column',
+                id='TLscatterX',
+                className='scatterX',
                 options=[{'label': i, 'value': i} for i in available_indicators],
-                value='Fertility rate, total (births per woman)'
+                value=available_indicators[1]
+            ),
+            dcc.Dropdown(
+                id='TLscatterY',
+                className='scatterY',
+                options=[{'label': i, 'value': i} for i in available_indicators],
+                value=available_indicators[2]
             ),
             dcc.RadioItems(
                 id='crossfilter-xaxis-type',
                 options=[{'label': i, 'value': i} for i in ['Linear', 'Log']],
                 value='Linear',
-                labelStyle={'display': 'inline-block'}
-            )
-        ],
-        style={'width': '49%', 'display': 'inline-block'}),
+                labelStyle={'display': 'inline-block'}                
+            )]),
+                        
+            dcc.Graph(
+            id='OverallPerformance',
+            hoverData={'points': [{'customdata': 'Japan'}]})
+        ]),
 
-        html.Div([
+
+        ## Histogram of particular key/Inverter
+
+        html.Div(className='TopRight', children=[
+
+            #Perhaps Graph Object Should return the view control as well?
+            html.Div([
             dcc.Dropdown(
-                id='crossfilter-yaxis-column',
-                options=[{'label': i, 'value': i} for i in available_indicators],
-                value='Life expectancy at birth, total (years)'
+                id='InverterX',
+                className='scatterX',
+                options=[{'label': i, 'value': i} for i in hist_columns],
+                value=hist_columns[1]
+            ),
+            dcc.Dropdown(
+                id='InverterY',
+                className='scatterY',
+                options=[{'label': i, 'value': i} for i in hist_columns],
+                value=hist_columns[2]
             ),
             dcc.RadioItems(
-                id='crossfilter-yaxis-type',
+                id='Inverter-xaxis-type',
                 options=[{'label': i, 'value': i} for i in ['Linear', 'Log']],
                 value='Linear',
-                labelStyle={'display': 'inline-block'}
-            )
-        ], style={'width': '49%', 'float': 'right', 'display': 'inline-block'})
-    ], style={
-        'borderBottom': 'thin lightgrey solid',
-        'backgroundColor': 'rgb(250, 250, 250)',
-        'padding': '10px 5px'
-    }),
+                labelStyle={'display': 'inline-block'}                
+            )]),
+            dcc.Graph(id='InverterHist')
+        ] ),
 
-    html.Div([
-        dcc.Graph(
-            id='OverallPerformance',
-            hoverData={'points': [{'customdata': 'Japan'}]}
-        )
-    ], style={'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
-    html.Div([
-        dcc.Graph(id='InverterDaily'),
+
+    html.Div(className='BottomLeft', children=[
+        dcc.Graph(id='InverterDaily')
+        ]),
+    html.Div(className='BottomRight', children=[
         dcc.Graph(id='InverterRaw'),
-    ], style={'display': 'inline-block', 'width': '49%'}),
+    ])
 
 
+    ])
 ])
 
 
@@ -77,44 +100,50 @@ app.layout = html.Div([
 
 @app.callback(
     dash.dependencies.Output('OverallPerformance', 'figure'),
-    [dash.dependencies.Input('crossfilter-xaxis-column', 'value'),
-     dash.dependencies.Input('crossfilter-yaxis-column', 'value'),
-     dash.dependencies.Input('crossfilter-xaxis-type', 'value'),
-     dash.dependencies.Input('crossfilter-yaxis-type', 'value')])
-def update_graph(xaxis_column_name, yaxis_column_name,
-                 xaxis_type, yaxis_type,
-                 ):
+    [dash.dependencies.Input('TLscatterX', 'value'),     
+     dash.dependencies.Input('TLscatterY', 'value'),     
+     dash.dependencies.Input('crossfilter-xaxis-type', 'value')])
+def update_graph(xcol, ycol, xaxis_type):
     
-    fig = SolarFarm.plotScatter()
+    fig = SolarFarm.plotScatter(xcol, ycol)
 
     return fig
 
 
 @app.callback(
     dash.dependencies.Output('InverterDaily', 'figure'),
-    [dash.dependencies.Input('OverallPerformance', 'hoverData'),
-     dash.dependencies.Input('crossfilter-xaxis-column', 'value'),
+    [dash.dependencies.Input('OverallPerformance', 'hoverData'),     
      dash.dependencies.Input('crossfilter-xaxis-type', 'value')])
-def update_y_timeseries(hoverData, xaxis_column_name, axis_type):
+def updateBarGraph(hoverData, axis_type):
     #key = '4UPUqMRk7TRMgml'
     key = hoverData['points'][0]['customdata'][0]        
     fig = SolarFarm.plotBars(key)    
     return fig
 
 
+
+@app.callback(
+    dash.dependencies.Output('InverterHist', 'figure'),
+    [dash.dependencies.Input('OverallPerformance', 'hoverData'),     
+    dash.dependencies.Input('InverterX', 'value'),     
+    dash.dependencies.Input('InverterY', 'value'),     
+     dash.dependencies.Input('crossfilter-xaxis-type', 'value')])
+def updateHist(hoverData, xcol, ycol, axis_type):
+    #key = '4UPUqMRk7TRMgml'
+    key = hoverData['points'][0]['customdata'][0]        
+    fig = SolarFarm.plotHist(key, xcol)    
+    return fig
+
+
 @app.callback(
     dash.dependencies.Output('InverterRaw', 'figure'),
-    [dash.dependencies.Input('InverterDaily', 'hoverData'),
-     dash.dependencies.Input('crossfilter-yaxis-column', 'value'),
-     dash.dependencies.Input('crossfilter-yaxis-type', 'value')])
-def update_x_timeseries(hoverData, yaxis_column_name, axis_type):
+    [dash.dependencies.Input('InverterDaily', 'hoverData')])
+def updateIntervals(hoverData):
     
     
     #key = '4UPUqMRk7TRMgml'
     key = hoverData['points'][0]['customdata'][0]      
-    date = hoverData['points'][0]['customdata'][1]      
-
-    
+    date = hoverData['points'][0]['customdata'][1]          
 
     fig = SolarFarm.plotIntervals(key, date)
 

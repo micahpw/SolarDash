@@ -43,11 +43,11 @@ class SolarFarm():
         return df, daily, total
                 
     #Plot Daily Bars based on inverter
-    def plotScatter(self):        
+    def plotScatter(self, xcol, ycol):        
 
 
 
-        fig= px.scatter(self.Total, x='DC_POWER_mean', y='LOSS_PERC_mean', color='SOURCE_KEY_', opacity=0.8, custom_data=['SOURCE_KEY_'])
+        fig= px.scatter(self.Total, x=xcol, y=ycol, color='SOURCE_KEY_', opacity=0.8, custom_data=['SOURCE_KEY_'])
 #fig= px.scatter(x=daily['IRRADIATION'], y=daily['DAILY_YIELD'], color='MODULE_TEMPERATURE',  opacity=0.5)
 #
         return fig    
@@ -58,7 +58,7 @@ class SolarFarm():
         inverter = self.Daily.loc[SOURCE_KEY].reset_index()
         inverter['SOURCE_KEY']=SOURCE_KEY #TODO avoid recreating column
 
-        xvals = inverter.index
+        xvals = inverter['DATE_TIME']
         y1 = inverter[('DAILY_YIELD','sum')]
         y2 = inverter[('IRRADIATION','sum')]
         
@@ -75,33 +75,44 @@ class SolarFarm():
         )
 
     # Add figure title
-        fig.update_layout(
-        title_text="Double Y Axis Example"
-        )
+        fig.update_layout(title=go.layout.Title(text="Daily Yield and Irradiance over Time", font=dict(
+                family="Times New Roman",
+                size=22,
+                color="#030303"
+            )))
+
+
+
 
     # Set x-axis title
-        fig.update_xaxes(title_text="xaxis title")
+        fig.update_xaxes(title_text="Date")
 
     # Set y-axes titles
-        fig.update_yaxes(title_text="<b>primary</b> yaxis title", secondary_y=False)
-        fig.update_yaxes(title_text="<b>secondary</b> yaxis title", secondary_y=True)
+        fig.update_yaxes(title_text="<b>Power (kW)</b>", secondary_y=False)
+        fig.update_yaxes(title_text="<b>Irradiance</b>", secondary_y=True)
 
         fig.update_layout(barmode='group')
         #fig = px.bar(x=inverter.index.values, y=inverter[('DAILY_YIELD','sum')])
         return fig
 
 
+    def plotHist(self,key, column):
+
+        inverter_raw = self.Intervals.loc[key]
+        x = inverter_raw[column].values
+        
+        fig = go.Figure(data=[go.Histogram(x=x)])
+
+        return fig
+
     def plotIntervals(self, key, date):
         
         start = datetime.strptime(date,'%Y-%m-%dT%H:%M:%S')
         end = start + timedelta(days=1)
-
-        
+       
         
         inverter_raw = self.Intervals.loc[key].loc[start:end]
-        
-            
-        
+                            
         
         
         fig = go.Figure()
