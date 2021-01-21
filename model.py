@@ -16,8 +16,7 @@ class SolarFarm():
 
 
     def __init__(self):
-        self.Intervals, self.Daily, self.Total = self.loadData()
-        
+        self.Intervals, self.Daily, self.Total = self.loadData()        
 
         super().__init__()
 
@@ -42,6 +41,7 @@ class SolarFarm():
         df.set_index(['SOURCE_KEY','DATE_TIME'], inplace=True)
         return df, daily, total
                 
+    
     #Plot Daily Bars based on inverter
     def plotScatter(self, xcol, ycol):        
 
@@ -49,6 +49,13 @@ class SolarFarm():
 
         fig= px.scatter(self.Total, x=xcol, y=ycol, color='SOURCE_KEY_', opacity=0.8, custom_data=['SOURCE_KEY_'])
 #fig= px.scatter(x=daily['IRRADIATION'], y=daily['DAILY_YIELD'], color='MODULE_TEMPERATURE',  opacity=0.5)
+
+        fig.update_layout(title=go.layout.Title(text="Aggregate Inverter Stats: {x} vs {y}".format(x=xcol, y=ycol), font=dict(
+                family="Times New Roman",
+                size=22,
+                color="#030303"
+        )))
+
 #
         return fig    
     
@@ -103,6 +110,19 @@ class SolarFarm():
         
         fig = go.Figure(data=[go.Histogram(x=x)])
 
+        #Update Layout
+        fig.update_layout(title=go.layout.Title(text="Inverter Distribution: {}".format(column), font=dict(
+                family="Times New Roman",
+                size=22,
+                color="#030303"
+            )))
+
+        fig.update_xaxes(title_text="{}".format(column))
+
+    # Set y-axes titles
+        fig.update_yaxes(title_text="<b>Count</b>")        
+
+
         return fig
 
     def plotIntervals(self, key, date):
@@ -117,7 +137,12 @@ class SolarFarm():
         
         fig = go.Figure()
         fig = make_subplots(specs=[[{"secondary_y": True}]])
-      
+
+        fig.update_layout(title=go.layout.Title(text="Raw Power Output vs Irradiance", font=dict(
+                family="Times New Roman",
+                size=22,
+                color="#030303"
+        )))
         
         fig.add_trace(go.Scatter(x=inverter_raw.index, y=inverter_raw['DC_POWER'],
                     mode='lines',
@@ -128,29 +153,9 @@ class SolarFarm():
                     name='AC'),
                     secondary_y=False)
 
-        fig.add_trace(go.Scatter(x=inverter_raw.index, y=inverter_raw['MODULE_TEMPERATURE'],
+        fig.add_trace(go.Scatter(x=inverter_raw.index, y=inverter_raw['IRRADIATION'],
                     mode='lines',
-                    name='MODULE_TEMPERATURE'),
+                    name='IRRADIATION'),
                     secondary_y=True)
         return fig
     
-#%%
-#g = SolarFarm()
-
-
-#key = '4UPUqMRk7TRMgml'
-
-#
-#g.Daily.loc[key][('LOSS_PERC','max')].hist(bins=25)
-
-
-
-#%%
-#fig = g.plotBars(key)#(key, '05-20-2020','05-24-2020')
-
-#fig.show()
-
-
-
-
-# %%

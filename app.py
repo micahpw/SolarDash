@@ -63,12 +63,8 @@ app.layout = html.Div([
                 options=[{'label': i, 'value': i} for i in hist_columns],
                 value=hist_columns[1]
             ),
-            dcc.Dropdown(
-                id='InverterY',
-                className='scatterY',
-                options=[{'label': i, 'value': i} for i in hist_columns],
-                value=hist_columns[2]
-            ),
+            
+
             dcc.RadioItems(
                 id='Inverter-xaxis-type',
                 options=[{'label': i, 'value': i} for i in ['Linear', 'Log']],
@@ -126,9 +122,9 @@ def updateBarGraph(hoverData, axis_type):
     dash.dependencies.Output('InverterHist', 'figure'),
     [dash.dependencies.Input('OverallPerformance', 'hoverData'),     
     dash.dependencies.Input('InverterX', 'value'),     
-    dash.dependencies.Input('InverterY', 'value'),     
-     dash.dependencies.Input('crossfilter-xaxis-type', 'value')])
-def updateHist(hoverData, xcol, ycol, axis_type):
+    #dash.dependencies.Input('InverterY', 'value'),     
+     dash.dependencies.Input('Inverter-xaxis-type', 'value')])
+def updateHist(hoverData, xcol, axis_type):
     #key = '4UPUqMRk7TRMgml'
     key = hoverData['points'][0]['customdata'][0]        
     fig = SolarFarm.plotHist(key, xcol)    
