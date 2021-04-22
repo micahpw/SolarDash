@@ -25,25 +25,21 @@ app.layout = html.Div([
         html.Div(className='TopLeft', children=[
             
             #Column Configuration  
-            html.Div([
+            html.Div(children=[
             dcc.Dropdown(
                 id='TLscatterX',
-                className='scatterX',
+                #className='scatterX',
                 options=[{'label': i, 'value': i} for i in available_indicators],
-                value=available_indicators[1]
+                value=available_indicators[1],
+                
             ),
             dcc.Dropdown(
                 id='TLscatterY',
-                className='scatterY',
+                #className='scatterY',
                 options=[{'label': i, 'value': i} for i in available_indicators],
-                value=available_indicators[2]
-            ),
-            dcc.RadioItems(
-                id='crossfilter-xaxis-type',
-                options=[{'label': i, 'value': i} for i in ['Linear', 'Log']],
-                value='Linear',
-                labelStyle={'display': 'inline-block'}                
-            )]),
+                value=available_indicators[2],
+                
+            )], style={'display':'flex'}),
                         
             dcc.Graph(
             id='OverallPerformance',
@@ -56,21 +52,13 @@ app.layout = html.Div([
         html.Div(className='TopRight', children=[
 
             #Perhaps Graph Object Should return the view control as well?
-            html.Div([
+
             dcc.Dropdown(
                 id='InverterX',
-                className='scatterX',
+                #className='scatterX',
                 options=[{'label': i, 'value': i} for i in hist_columns],
                 value=hist_columns[1]
-            ),
-            
-
-            dcc.RadioItems(
-                id='Inverter-xaxis-type',
-                options=[{'label': i, 'value': i} for i in ['Linear', 'Log']],
-                value='Linear',
-                labelStyle={'display': 'inline-block'}                
-            )]),
+                ),
             dcc.Graph(id='InverterHist')
         ] ),
 
@@ -97,9 +85,8 @@ app.layout = html.Div([
 @app.callback(
     dash.dependencies.Output('OverallPerformance', 'figure'),
     [dash.dependencies.Input('TLscatterX', 'value'),     
-     dash.dependencies.Input('TLscatterY', 'value'),     
-     dash.dependencies.Input('crossfilter-xaxis-type', 'value')])
-def update_graph(xcol, ycol, xaxis_type):
+     dash.dependencies.Input('TLscatterY', 'value')])
+def update_graph(xcol, ycol):
     
     fig = SolarFarm.plotScatter(xcol, ycol)
 
@@ -108,9 +95,8 @@ def update_graph(xcol, ycol, xaxis_type):
 
 @app.callback(
     dash.dependencies.Output('InverterDaily', 'figure'),
-    [dash.dependencies.Input('OverallPerformance', 'hoverData'),     
-     dash.dependencies.Input('crossfilter-xaxis-type', 'value')])
-def updateBarGraph(hoverData, axis_type):
+    [dash.dependencies.Input('OverallPerformance', 'hoverData')])
+def updateBarGraph(hoverData):
     #key = '4UPUqMRk7TRMgml'
     key = hoverData['points'][0]['customdata'][0]        
     fig = SolarFarm.plotBars(key)    
@@ -121,10 +107,8 @@ def updateBarGraph(hoverData, axis_type):
 @app.callback(
     dash.dependencies.Output('InverterHist', 'figure'),
     [dash.dependencies.Input('OverallPerformance', 'hoverData'),     
-    dash.dependencies.Input('InverterX', 'value'),     
-    #dash.dependencies.Input('InverterY', 'value'),     
-     dash.dependencies.Input('Inverter-xaxis-type', 'value')])
-def updateHist(hoverData, xcol, axis_type):
+    dash.dependencies.Input('InverterX', 'value')])
+def updateHist(hoverData, xcol):
     #key = '4UPUqMRk7TRMgml'
     key = hoverData['points'][0]['customdata'][0]        
     fig = SolarFarm.plotHist(key, xcol)    

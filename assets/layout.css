@@ -23,15 +23,13 @@
 
 
 
-.scatterY {
-  
-  float: left; 
+#TLscatterY {
+  float: right;
   width: 49%;
 }
 
 
-.scatterX {
-  
-  float: right;  
+#TLscatterX {  
+  float: left;
   width: 49%;
 }

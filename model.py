@@ -22,8 +22,8 @@ class SolarFarm():
 
 
     def loadData(self):
-        pwr = pd.read_csv('./data/Plant_1_Generation_Data.csv')
-        wtr = pd.read_csv('./data/Plant_1_Weather_Sensor_Data.csv')
+        pwr = pd.read_csv('./data/Plant_2_Generation_Data.csv')
+        wtr = pd.read_csv('./data/Plant_2_Weather_Sensor_Data.csv')
 
         wtr['DATE_TIME'] = pd.to_datetime(wtr['DATE_TIME'])
         pwr['DATE_TIME'] = pd.to_datetime(pwr['DATE_TIME'])
