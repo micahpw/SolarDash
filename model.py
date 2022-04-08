@@ -3,13 +3,12 @@
 #Class is responsible for loading data and generating graphics
 
 #Each class encapsulates the logic and knowledge behind a particular dataset
-#%%
+
 import plotly.graph_objects as go
 import pandas as pd
 from plotly.subplots import make_subplots
 from datetime import datetime
 from datetime import timedelta
-
 import plotly.express as px
 
 class SolarFarm():
@@ -45,18 +44,19 @@ class SolarFarm():
     #Plot Daily Bars based on inverter
     def plotScatter(self, xcol, ycol):        
 
+        fig= px.scatter(self.Total, 
+            x=xcol, 
+            y=ycol, 
+            color='SOURCE_KEY_', 
+            opacity=0.8, custom_data=['SOURCE_KEY_'])
 
-
-        fig= px.scatter(self.Total, x=xcol, y=ycol, color='SOURCE_KEY_', opacity=0.8, custom_data=['SOURCE_KEY_'])
-#fig= px.scatter(x=daily['IRRADIATION'], y=daily['DAILY_YIELD'], color='MODULE_TEMPERATURE',  opacity=0.5)
-
-        fig.update_layout(title=go.layout.Title(text="Aggregate Inverter Stats: {x} vs {y}".format(x=xcol, y=ycol), font=dict(
+        fig.update_layout(
+                title=go.layout.Title(text="Aggregate Inverter Stats: {x} vs {y}".format(x=xcol, y=ycol), font=dict(
                 family="Times New Roman",
                 size=22,
                 color="#030303"
         )))
 
-#
         return fig    
     
     #Plot Bars
@@ -81,25 +81,21 @@ class SolarFarm():
         secondary_y=True,
         )
 
-    # Add figure title
+        # Add figure title
         fig.update_layout(title=go.layout.Title(text="Daily Yield and Irradiance over Time", font=dict(
                 family="Times New Roman",
                 size=22,
                 color="#030303"
             )))
 
-
-
-
-    # Set x-axis title
+        # Set x-axis title
         fig.update_xaxes(title_text="Date")
 
-    # Set y-axes titles
+        # Set y-axes titles
         fig.update_yaxes(title_text="<b>Power (kW)</b>", secondary_y=False)
         fig.update_yaxes(title_text="<b>Irradiance</b>", secondary_y=True)
 
         fig.update_layout(barmode='group')
-        #fig = px.bar(x=inverter.index.values, y=inverter[('DAILY_YIELD','sum')])
         return fig
 
 
@@ -108,54 +104,57 @@ class SolarFarm():
         inverter_raw = self.Intervals.loc[key]
         x = inverter_raw[column].values
         
-        fig = go.Figure(data=[go.Histogram(x=x)])
+        fig = go.Figure(data=[go.Histogram(x=x, opacity=0.8)])
 
         #Update Layout
         fig.update_layout(title=go.layout.Title(text="Inverter Distribution: {}".format(column), font=dict(
                 family="Times New Roman",
                 size=22,
-                color="#030303"
+                color="#030303",                
             )))
 
         fig.update_xaxes(title_text="{}".format(column))
 
-    # Set y-axes titles
+        # Set y-axes titles
         fig.update_yaxes(title_text="<b>Count</b>")        
-
 
         return fig
 
+    #Plot the interval data for that particular inverter and date.
     def plotIntervals(self, key, date):
         
+        #Parse the input date and get data
         start = datetime.strptime(date,'%Y-%m-%dT%H:%M:%S')
         end = start + timedelta(days=1)
-       
-        
         inverter_raw = self.Intervals.loc[key].loc[start:end]
                             
         
-        
+        #Create figure and plot DC, AC and Irradiance values.
         fig = go.Figure()
         fig = make_subplots(specs=[[{"secondary_y": True}]])
 
         fig.update_layout(title=go.layout.Title(text="Raw Power Output vs Irradiance", font=dict(
                 family="Times New Roman",
                 size=22,
-                color="#030303"
+                color="#030303",                
         )))
         
         fig.add_trace(go.Scatter(x=inverter_raw.index, y=inverter_raw['DC_POWER'],
                     mode='lines',
-                    name='DC'),
+                    name='DC',                                     
+                    ),
                     secondary_y=False)
         fig.add_trace(go.Scatter(x=inverter_raw.index, y=inverter_raw['AC_POWER'],
+                    fill='tozeroy',
                     mode='lines',
-                    name='AC'),
+                    name='AC',                    
+                    ),
                     secondary_y=False)
 
         fig.add_trace(go.Scatter(x=inverter_raw.index, y=inverter_raw['IRRADIATION'],
                     mode='lines',
-                    name='IRRADIATION'),
+                    name='IRRADIATION',
+                    ),
                     secondary_y=True)
         return fig
     

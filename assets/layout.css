@@ -1,26 +1,42 @@
-.GridWrapper {
+
+#parent {
+  background-color: blue;
+}
+
+.GridWrapper {    
+    box-sizing: border-box;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    grid-auto-rows: minmax(100px, auto);
+    gap: 20px;
+    grid-auto-rows: max-content;
   }
+
+  #Banner {
+    grid-column:  1 / 5;
+    grid-row: 1;
+    background-color: blue;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    color: white;
+  } 
+
   .TopLeft {
     grid-column: 1 / 3;
-    grid-row: 1;
+    grid-row: 2;
   }
   .TopRight {
     grid-column: 3 / 5;
-    grid-row: 1;
+    grid-row: 2;
   }
   .BottomLeft {
     grid-column: 1 / 3;
-    grid-row: 2 ;
+    grid-row: 3 ;
   }
   .BottomRight {
     grid-column: 3 / 5;
-    grid-row: 2;
+    grid-row: 3;
   }
-
 
 
 #TLscatterY {
